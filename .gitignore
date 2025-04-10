@@ -1,0 +1,31 @@
+# node_modulesディレクトリ（依存関係）
+node_modules/
+
+# ビルドファイル
+dist/
+build/
+
+# 環境変数ファイル
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ログファイル
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# エディタディレクトリとファイル
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# macOS固有のファイル
+.DS_Store
