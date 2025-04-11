@@ -80,28 +80,71 @@ function Card({ card, columnId, onDeleteCard, onUpdateCard }: CardProps) {
       ) : (
         <div
           ref={setNodeRef}
-          style={style}
-          className="bg-white rounded shadow p-3 mb-2 cursor-move hover:shadow-md border-l-4 border-blue-400 transition-all"
+          style={{
+            ...style,
+            backgroundColor: 'white',
+            borderRadius: '3px',
+            boxShadow: '0 1px 0 rgba(9, 30, 66, 0.25)',
+            padding: '8px',
+            marginBottom: '8px',
+            cursor: 'pointer',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+            borderLeft: card.dueDate ? '3px solid #61bd4f' : 'none',
+          }}
           onClick={toggleEdit}
+          onMouseOver={(e) => {
+            e.currentTarget.style.backgroundColor = '#f7f8f9';
+            e.currentTarget.style.boxShadow = '0 2px 4px rgba(9, 30, 66, 0.25)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.backgroundColor = 'white';
+            e.currentTarget.style.boxShadow = '0 1px 0 rgba(9, 30, 66, 0.25)';
+          }}
           {...attributes}
           {...listeners}
         >
-          <div className="text-gray-700">{card.content}</div>
+          <div style={{ fontSize: '14px', wordBreak: 'break-word' }}>{card.content}</div>
           
           {card.dueDate && (
-            <div className={`text-xs mt-2 flex items-center ${getDueDateColor()}`}>
-              <span className="mr-1">📅</span>
+            <div style={{ 
+              fontSize: '12px', 
+              marginTop: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              color: getDueDateColor() === 'text-red-500' ? '#eb5a46' : 
+                    getDueDateColor() === 'text-orange-500' ? '#ff9f1a' : '#61bd4f'
+            }}>
+              <span style={{ marginRight: '4px' }}>📅</span>
               {formatDueDate(card.dueDate)}
             </div>
           )}
           
-          <div className="flex justify-end mt-2">
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'flex-end', 
+            marginTop: '8px',
+            opacity: 0.6,
+            transition: 'opacity 0.2s ease'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+          onMouseOut={(e) => e.currentTarget.style.opacity = '0.6'}
+          >
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 onDeleteCard(columnId, card.id);
               }}
-              className="text-xs text-gray-500 hover:text-red-500"
+              style={{ 
+                border: 'none', 
+                background: 'none', 
+                cursor: 'pointer',
+                fontSize: '12px',
+                color: '#6b778c',
+                padding: '2px 4px',
+                borderRadius: '3px'
+              }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(9, 30, 66, 0.08)'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
               削除
             </button>

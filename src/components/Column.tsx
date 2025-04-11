@@ -45,24 +45,53 @@ function ColumnComponent({ column, onDeleteColumn, onAddCard, onDeleteCard, onUp
   return (
     <div
       ref={setNodeRef}
-      style={style}
-      className="bg-gray-100 rounded-md p-3 w-72 flex-shrink-0 shadow-md flex flex-col max-h-[calc(100vh-180px)] hover:shadow-lg"
+      style={{
+        ...style,
+        backgroundColor: '#ebecf0',
+        borderRadius: '3px',
+        width: '280px',
+        minWidth: '280px',
+        marginRight: '12px',
+        padding: '8px',
+        maxHeight: 'calc(100vh - 120px)',
+        display: 'flex',
+        flexDirection: 'column',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)',
+        transition: 'box-shadow 0.2s ease'
+      }}
     >
       <div 
-        className="flex justify-between items-center mb-3 p-2 cursor-grab bg-gray-200 rounded" 
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '8px',
+          marginBottom: '8px',
+          fontWeight: 'bold',
+          cursor: 'grab'
+        }}
         {...attributes} 
         {...listeners}
       >
-        <h3 className="font-semibold text-gray-700">{column.title}</h3>
+        <h3 style={{ margin: 0, fontSize: '14px' }}>{column.title}</h3>
         <button 
           onClick={() => onDeleteColumn(column.id)}
-          className="text-gray-500 hover:text-red-500 ml-2"
+          style={{ 
+            border: 'none', 
+            background: 'none', 
+            cursor: 'pointer',
+            fontSize: '16px',
+            color: '#6b778c',
+            opacity: 0.8
+          }}
+          onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
+          onMouseOut={(e) => e.currentTarget.style.opacity = '0.8'}
         >
           ×
         </button>
       </div>
       
-      <div className="overflow-y-auto flex-grow">
+      <div style={{ overflowY: 'auto', flexGrow: 1 }}>
         {column.cards && column.cards.length > 0 ? (
           column.cards.map((card) => (
             <Card
@@ -74,7 +103,13 @@ function ColumnComponent({ column, onDeleteColumn, onAddCard, onDeleteCard, onUp
             />
           ))
         ) : (
-          <div className="text-gray-400 text-center p-4 bg-gray-50 rounded border border-dashed border-gray-300">
+          <div style={{ 
+            textAlign: 'center', 
+            color: '#6b778c', 
+            padding: '10px',
+            fontSize: '13px',
+            opacity: 0.8
+          }}>
             カードがありません
           </div>
         )}
@@ -85,9 +120,24 @@ function ColumnComponent({ column, onDeleteColumn, onAddCard, onDeleteCard, onUp
       ) : (
         <button
           onClick={toggleAddForm}
-          className="w-full text-left text-gray-600 py-2 px-2 mt-2 hover:bg-gray-200 rounded flex items-center"
+          style={{
+            width: '100%',
+            textAlign: 'left',
+            padding: '8px',
+            marginTop: '8px',
+            backgroundColor: 'transparent',
+            border: 'none',
+            cursor: 'pointer',
+            color: '#6b778c',
+            borderRadius: '3px',
+            display: 'flex',
+            alignItems: 'center',
+            fontSize: '13px'
+          }}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(9, 30, 66, 0.08)'}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
         >
-          <span className="mr-1">+</span> カードを追加
+          <span style={{ marginRight: '4px' }}>+</span> カードを追加
         </button>
       )}
     </div>

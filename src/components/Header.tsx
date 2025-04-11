@@ -2,17 +2,9 @@ import React from 'react';
 
 function Header() {
   return (
-    <header className="bg-blue-800 text-white p-4 shadow-md">
-      <div className="container mx-auto flex justify-between items-center">
-        <div className="flex items-center">
-          <h1 className="text-2xl font-bold">Trello風タスク管理アプリ</h1>
-        </div>
-        <div className="flex space-x-4">
-          <button className="bg-blue-700 hover:bg-blue-900 text-white font-bold py-2 px-4 rounded transition-colors">
-            設定
-          </button>
-        </div>
-      </div>
+    <header className="header">
+      <h1>Trello風タスク管理アプリ</h1>
+      <button className="btn">設定</button>
     </header>
   );
 }

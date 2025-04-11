@@ -243,14 +243,14 @@ function Board({ columns, addNotification }: BoardProps) {
   };
 
   return (
-    <div className="w-full">
+    <div className="board-container">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex overflow-x-auto py-4 items-start gap-4">
+        <div style={{ display: 'flex', overflowX: 'auto', padding: '10px' }}>
           {columns.map((column) => (
             <ColumnComponent
               key={column.id}
