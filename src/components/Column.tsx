@@ -46,7 +46,7 @@ function ColumnComponent({ column, onDeleteColumn, onAddCard, onDeleteCard, onUp
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-gray-100 rounded-md p-3 w-72 flex-shrink-0 shadow-md flex flex-col max-h-[calc(100vh-180px)]"
+      className="bg-gray-100 rounded-md p-3 w-72 flex-shrink-0 shadow-md flex flex-col max-h-[calc(100vh-180px)] hover:shadow-lg"
     >
       <div 
         className="flex justify-between items-center mb-3 p-2 cursor-grab bg-gray-200 rounded" 
@@ -56,7 +56,7 @@ function ColumnComponent({ column, onDeleteColumn, onAddCard, onDeleteCard, onUp
         <h3 className="font-semibold text-gray-700">{column.title}</h3>
         <button 
           onClick={() => onDeleteColumn(column.id)}
-          className="text-gray-500 hover:text-red-500"
+          className="text-gray-500 hover:text-red-500 ml-2"
         >
           ×
         </button>
@@ -74,7 +74,7 @@ function ColumnComponent({ column, onDeleteColumn, onAddCard, onDeleteCard, onUp
             />
           ))
         ) : (
-          <div className="text-gray-400 text-center p-2">
+          <div className="text-gray-400 text-center p-4 bg-gray-50 rounded border border-dashed border-gray-300">
             カードがありません
           </div>
         )}
@@ -85,9 +85,9 @@ function ColumnComponent({ column, onDeleteColumn, onAddCard, onDeleteCard, onUp
       ) : (
         <button
           onClick={toggleAddForm}
-          className="w-full text-left text-gray-600 py-2 px-2 hover:bg-gray-200 rounded mt-2"
+          className="w-full text-left text-gray-600 py-2 px-2 mt-2 hover:bg-gray-200 rounded flex items-center"
         >
-          + カードを追加
+          <span className="mr-1">+</span> カードを追加
         </button>
       )}
     </div>

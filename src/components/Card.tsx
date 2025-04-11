@@ -81,7 +81,7 @@ function Card({ card, columnId, onDeleteCard, onUpdateCard }: CardProps) {
         <div
           ref={setNodeRef}
           style={style}
-          className="bg-white rounded shadow p-3 mb-2 cursor-move hover:shadow-md border-l-4 border-blue-400"
+          className="bg-white rounded shadow p-3 mb-2 cursor-move hover:shadow-md border-l-4 border-blue-400 transition-all"
           onClick={toggleEdit}
           {...attributes}
           {...listeners}
@@ -89,7 +89,7 @@ function Card({ card, columnId, onDeleteCard, onUpdateCard }: CardProps) {
           <div className="text-gray-700">{card.content}</div>
           
           {card.dueDate && (
-            <div className={`text-xs mt-2 ${getDueDateColor()}`}>
+            <div className={`text-xs mt-2 flex items-center ${getDueDateColor()}`}>
               <span className="mr-1">📅</span>
               {formatDueDate(card.dueDate)}
             </div>
