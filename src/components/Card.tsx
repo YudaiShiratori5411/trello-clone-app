@@ -95,10 +95,12 @@ function Card({ card, columnId, onDeleteCard, onUpdateCard }: CardProps) {
           onMouseOver={(e) => {
             e.currentTarget.style.backgroundColor = '#f7f8f9';
             e.currentTarget.style.boxShadow = '0 2px 4px rgba(9, 30, 66, 0.25)';
+            e.currentTarget.style.transform = 'translateY(-3px)';
           }}
           onMouseOut={(e) => {
             e.currentTarget.style.backgroundColor = 'white';
             e.currentTarget.style.boxShadow = '0 1px 0 rgba(9, 30, 66, 0.25)';
+            e.currentTarget.style.transform = 'translateY(0)';
           }}
           {...attributes}
           {...listeners}
