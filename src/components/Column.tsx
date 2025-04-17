@@ -49,7 +49,7 @@ function ColumnComponent({ column, onDeleteColumn, onAddCard, onDeleteCard, onUp
         ...style,
         backgroundColor: '#ebecf0',
         borderRadius: '3px',
-        width: '24git add .0px',
+        width: '240px',
         minWidth: '240px',
         marginRight: '12px',
         padding: '8px',
@@ -57,7 +57,15 @@ function ColumnComponent({ column, onDeleteColumn, onAddCard, onDeleteCard, onUp
         display: 'flex',
         flexDirection: 'column',
         boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12)',
-        transition: 'box-shadow 0.2s ease'
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+      }}
+      onMouseOver={(e) => {
+        e.currentTarget.style.transform = `${CSS.Transform.toString(transform) || ''} translateY(-5px)`;
+        e.currentTarget.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.15)';
+      }}
+      onMouseOut={(e) => {
+        e.currentTarget.style.transform = CSS.Transform.toString(transform) || '';
+        e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.12)';
       }}
     >
       <div 
