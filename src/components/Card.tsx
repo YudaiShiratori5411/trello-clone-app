@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { format } from 'date-fns';
-import { ja } from 'date-fns/locale';
-import { Card as CardType } from '../types';
-import CardEditForm from './CardEditForm.tsx';
 
 interface CardProps {
-  card: CardType;
+  card: {
+    id: string;
+    content: string;
+    dueDate: string | null;
+  };
   columnId: string;
   onDeleteCard: (columnId: string, cardId: string) => void;
   onUpdateCard: (columnId: string, cardId: string, content: string, dueDate: string | null) => void;
@@ -15,68 +15,130 @@ interface CardProps {
 
 function Card({ card, columnId, onDeleteCard, onUpdateCard }: CardProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(card.content);
+  const [editDueDate, setEditDueDate] = useState(card.dueDate || '');
   
   const {
     attributes,
     listeners,
     setNodeRef,
     transform,
-    transition
+    transition,
   } = useSortable({
-    id: `${card.id}_${columnId}`
+    id: card.id,
   });
   
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition
+    transition,
   };
 
-  // 編集モードの切り替え
-  const toggleEdit = () => {
-    setIsEditing(!isEditing);
+  const handleSubmit = () => {
+    if (editContent.trim()) {
+      onUpdateCard(columnId, card.id, editContent, editDueDate || null);
+      setIsEditing(false);
+    }
   };
 
-  // カード更新処理
-  const handleUpdateCard = (content: string, dueDate: string | null) => {
-    onUpdateCard(columnId, card.id, content, dueDate);
+  const handleCancel = () => {
+    setEditContent(card.content);
+    setEditDueDate(card.dueDate || '');
     setIsEditing(false);
   };
 
-  // 締め切り日の表示形式変換
-  const formatDueDate = (dateString: string | null) => {
-    if (!dateString) return null;
-    
+  const formatDueDate = (dateString: string) => {
     const date = new Date(dateString);
-    return format(date, 'yyyy年MM月dd日', { locale: ja });
+    return date.toLocaleDateString('ja-JP', { 
+      month: 'short', 
+      day: 'numeric' 
+    });
   };
 
-  // 締め切り日の状態に応じた色を設定
   const getDueDateColor = () => {
     if (!card.dueDate) return '';
     
     const now = new Date();
     const dueDate = new Date(card.dueDate);
+    const diffTime = dueDate.getTime() - now.getTime();
+    const diffDays = diffTime / (1000 * 3600 * 24);
     
-    // 今日が締め切り日
-    if (dueDate.toDateString() === now.toDateString()) {
-      return 'text-orange-500';
-    }
-    // 締め切り日過ぎた
-    else if (dueDate < now) {
-      return 'text-red-500';
-    }
-    // 締め切り日まだ
-    return 'text-green-500';
+    if (diffDays < 0) return '#eb5a46';  // 赤
+    if (diffDays < 1) return '#ff9f1a';  // オレンジ
+    return '#61bd4f';  // 緑
   };
 
   return (
     <>
       {isEditing ? (
-        <CardEditForm
-          card={card}
-          onSubmit={handleUpdateCard}
-          onCancel={toggleEdit}
-        />
+        <div style={{
+          backgroundColor: 'white',
+          padding: '8px',
+          marginBottom: '8px',
+          borderRadius: '3px',
+          boxShadow: '0 1px 0 rgba(9, 30, 66, 0.25)'
+        }}>
+          <textarea
+            value={editContent}
+            onChange={(e) => setEditContent(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '6px',
+              marginBottom: '8px',
+              border: '1px solid #ddd',
+              borderRadius: '3px',
+              resize: 'none'
+            }}
+            rows={3}
+            autoFocus
+          />
+          <div style={{ marginBottom: '8px' }}>
+            <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px', color: '#6b778c' }}>
+              期限日:
+            </label>
+            <input
+              type="date"
+              value={editDueDate}
+              onChange={(e) => setEditDueDate(e.target.value)}
+              style={{ 
+                width: '100%', 
+                padding: '6px', 
+                border: '1px solid #ddd', 
+                borderRadius: '3px',
+                fontSize: '14px'
+              }}
+            />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <button
+              style={{
+                backgroundColor: '#5aac44',
+                color: 'white',
+                border: 'none',
+                padding: '6px 12px',
+                borderRadius: '3px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+              onClick={handleSubmit}
+            >
+              保存
+            </button>
+            <button
+              style={{
+                backgroundColor: '#ea2525',
+                color: 'white',
+                border: 'none',
+                padding: '6px 12px',
+                borderRadius: '3px',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+              onClick={handleCancel}
+            >
+              キャンセル
+            </button>
+          </div>
+        </div>
       ) : (
         <div
           ref={setNodeRef}
@@ -88,19 +150,19 @@ function Card({ card, columnId, onDeleteCard, onUpdateCard }: CardProps) {
             padding: '8px',
             marginBottom: '8px',
             cursor: 'pointer',
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-            borderLeft: card.dueDate ? '3px solid #61bd4f' : 'none',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease',
+            borderLeft: card.dueDate ? `3px solid ${getDueDateColor()}` : 'none',
           }}
-          onClick={toggleEdit}
+          onClick={() => setIsEditing(true)}
           onMouseOver={(e) => {
             e.currentTarget.style.backgroundColor = '#f7f8f9';
             e.currentTarget.style.boxShadow = '0 2px 4px rgba(9, 30, 66, 0.25)';
-            e.currentTarget.style.transform = 'translateY(-3px)';
+            e.currentTarget.style.transform = `${CSS.Transform.toString(transform) || ''} translateY(-2px)`;
           }}
           onMouseOut={(e) => {
             e.currentTarget.style.backgroundColor = 'white';
             e.currentTarget.style.boxShadow = '0 1px 0 rgba(9, 30, 66, 0.25)';
-            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.transform = CSS.Transform.toString(transform) || '';
           }}
           {...attributes}
           {...listeners}
@@ -113,8 +175,7 @@ function Card({ card, columnId, onDeleteCard, onUpdateCard }: CardProps) {
               marginTop: '8px',
               display: 'flex',
               alignItems: 'center',
-              color: getDueDateColor() === 'text-red-500' ? '#eb5a46' : 
-                    getDueDateColor() === 'text-orange-500' ? '#ff9f1a' : '#61bd4f'
+              color: getDueDateColor()
             }}>
               <span style={{ marginRight: '4px' }}>📅</span>
               {formatDueDate(card.dueDate)}
@@ -128,27 +189,47 @@ function Card({ card, columnId, onDeleteCard, onUpdateCard }: CardProps) {
             opacity: 0.6,
             transition: 'opacity 0.2s ease'
           }}
-          onMouseOver={(e) => e.currentTarget.style.opacity = '1'}
-          onMouseOut={(e) => e.currentTarget.style.opacity = '0.6'}
+          onMouseOver={(e) => {
+            e.stopPropagation();
+            e.currentTarget.style.opacity = '1';
+          }}
+          onMouseOut={(e) => {
+            e.stopPropagation();
+            e.currentTarget.style.opacity = '0.6';
+          }}
           >
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                onDeleteCard(columnId, card.id);
+                console.log('削除ボタンがクリックされました', columnId, card.id);
+                
+                // windowオブジェクトの初期化
+                if (!window.deleteCard) {
+                  window.deleteCard = {
+                    columnId: '',
+                    cardId: '',
+                    clicked: false
+                  };
+                }
+                
+                // 値を設定
+                window.deleteCard.columnId = columnId;
+                window.deleteCard.cardId = card.id;
+                window.deleteCard.clicked = true;
+                
+                console.log('削除情報をwindowオブジェクトに設定しました', window.deleteCard);
               }}
-              style={{ 
-                border: 'none', 
-                background: 'none', 
+              style={{
+                border: '1px solid red',
+                background: 'white',
                 cursor: 'pointer',
                 fontSize: '12px',
-                color: '#6b778c',
-                padding: '2px 4px',
+                padding: '4px 8px',
+                marginTop: '8px',
                 borderRadius: '3px'
               }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'rgba(9, 30, 66, 0.08)'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              削除
+              削除する
             </button>
           </div>
         </div>

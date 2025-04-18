@@ -10,9 +10,11 @@ import AddColumnForm from './AddColumnForm.tsx';
 interface BoardProps {
   columns: Column[];
   addNotification: (notification: Omit<Notification, 'id'>) => void;
+  isUsingDummyData?: boolean;
+  onUpdateColumns?: (columns: Column[]) => void;
 }
 
-function Board({ columns, addNotification }: BoardProps) {
+function Board({ columns, addNotification, isUsingDummyData, onUpdateColumns }: BoardProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -25,6 +27,24 @@ function Board({ columns, addNotification }: BoardProps) {
   // 新しいリストを追加
   const handleAddColumn = async (title: string) => {
     try {
+      // ダミーデータを使用している場合
+      if (isUsingDummyData && onUpdateColumns) {
+        const newColumn: Column = {
+          id: Date.now().toString(),
+          title,
+          order: columns.length,
+          cards: []
+        };
+        
+        onUpdateColumns([...columns, newColumn]);
+        
+        addNotification({
+          type: 'success',
+          message: 'リストを追加しました'
+        });
+        return;
+      }
+      
       await addDoc(collection(db, "columns"), {
         title,
         order: columns.length,
@@ -47,6 +67,26 @@ function Board({ columns, addNotification }: BoardProps) {
   // リストを削除
   const handleDeleteColumn = async (columnId: string) => {
     try {
+      console.log("リスト削除処理開始:", columnId);
+      
+      // ダミーデータを使用している場合
+      if (isUsingDummyData && onUpdateColumns) {
+        const updatedColumns = columns
+          .filter(column => column.id !== columnId)
+          .map((column, index) => ({
+            ...column,
+            order: index
+          }));
+        
+        onUpdateColumns(updatedColumns);
+        
+        addNotification({
+          type: 'success',
+          message: 'リストを削除しました'
+        });
+        return;
+      }
+      
       await deleteDoc(doc(db, "columns", columnId));
       
       // 残りのリストの順序を更新
@@ -76,6 +116,36 @@ function Board({ columns, addNotification }: BoardProps) {
   // カードを追加
   const handleAddCard = async (columnId: string, cardContent: string) => {
     try {
+      console.log("カード追加処理開始:", columnId, cardContent);
+      
+      // ダミーデータを使用している場合
+      if (isUsingDummyData && onUpdateColumns) {
+        const newCard = {
+          id: Date.now().toString(),
+          content: cardContent,
+          createdAt: new Date().toISOString(),
+          dueDate: null
+        };
+        
+        const updatedColumns = columns.map(column => {
+          if (column.id === columnId) {
+            return {
+              ...column,
+              cards: [...(column.cards || []), newCard]
+            };
+          }
+          return column;
+        });
+        
+        onUpdateColumns(updatedColumns);
+        
+        addNotification({
+          type: 'success',
+          message: 'カードを追加しました'
+        });
+        return;
+      }
+      
       const columnRef = doc(db, "columns", columnId);
       const column = columns.find(col => col.id === columnId);
       
@@ -107,22 +177,32 @@ function Board({ columns, addNotification }: BoardProps) {
 
   // カードを削除
   const handleDeleteCard = async (columnId: string, cardId: string) => {
+    console.log("カード削除処理開始:", columnId, cardId);
+    alert(`Board内のhandleDeleteCard関数が呼び出されました: ${columnId}, ${cardId}`);
+    
     try {
-      const columnRef = doc(db, "columns", columnId);
-      const column = columns.find(col => col.id === columnId);
-      
-      if (!column) return;
-      
-      await updateDoc(columnRef, {
-        cards: column.cards.filter(card => card.id !== cardId)
+      // 最もシンプルな実装 - Firebase関連のコードをすべてコメントアウト
+      const updatedColumns = columns.map(column => {
+        if (column.id === columnId) {
+          return {
+            ...column,
+            cards: column.cards.filter(card => card.id !== cardId)
+          };
+        }
+        return column;
       });
+      
+      // この行が重要 - 更新された配列をセットする
+      if (onUpdateColumns) {
+        onUpdateColumns(updatedColumns);
+      }
       
       addNotification({
         type: 'success',
         message: 'カードを削除しました'
       });
     } catch (error) {
-      console.error("Error deleting card: ", error);
+      console.error("Error deleting card:", error);
       addNotification({
         type: 'error',
         message: 'カードの削除に失敗しました'
@@ -133,6 +213,38 @@ function Board({ columns, addNotification }: BoardProps) {
   // カードの内容を更新
   const handleUpdateCard = async (columnId: string, cardId: string, updatedContent: string, dueDate: string | null) => {
     try {
+      console.log("カード更新処理開始:", columnId, cardId, updatedContent, dueDate);
+      
+      // ダミーデータを使用している場合
+      if (isUsingDummyData && onUpdateColumns) {
+        const updatedColumns = columns.map(column => {
+          if (column.id === columnId) {
+            return {
+              ...column,
+              cards: column.cards.map(card => {
+                if (card.id === cardId) {
+                  return { 
+                    ...card, 
+                    content: updatedContent,
+                    dueDate: dueDate
+                  };
+                }
+                return card;
+              })
+            };
+          }
+          return column;
+        });
+        
+        onUpdateColumns(updatedColumns);
+        
+        addNotification({
+          type: 'success',
+          message: 'カードを更新しました'
+        });
+        return;
+      }
+      
       const columnRef = doc(db, "columns", columnId);
       const column = columns.find(col => col.id === columnId);
       
@@ -182,6 +294,13 @@ function Board({ columns, addNotification }: BoardProps) {
     
     // カードのドラッグの場合（カードID_カラムID形式）
     if (typeof activeId === 'string' && activeId.includes('_')) {
+      // ダミーデータを使用している場合
+      if (isUsingDummyData && onUpdateColumns) {
+        // 同様のロジックをダミーデータ用に実装
+        // 必要に応じて実装してください
+        return;
+      }
+      
       const [cardId, sourceColumnId] = activeId.split('_');
       
       // 同じカラム内でのドラッグの場合
@@ -225,6 +344,20 @@ function Board({ columns, addNotification }: BoardProps) {
     }
     // リストのドラッグの場合
     else if (columns.find(col => col.id === activeId) && columns.find(col => col.id === overId)) {
+      // ダミーデータを使用している場合
+      if (isUsingDummyData && onUpdateColumns) {
+        const oldIndex = columns.findIndex(col => col.id === activeId);
+        const newIndex = columns.findIndex(col => col.id === overId);
+        
+        const reorderedColumns = arrayMove(columns, oldIndex, newIndex).map((column, index) => ({
+          ...column,
+          order: index
+        }));
+        
+        onUpdateColumns(reorderedColumns);
+        return;
+      }
+      
       const oldIndex = columns.findIndex(col => col.id === activeId);
       const newIndex = columns.findIndex(col => col.id === overId);
       
