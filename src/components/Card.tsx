@@ -2,6 +2,17 @@ import { useState } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
+// window.deleteCard の型定義を追加
+declare global {
+  interface Window {
+    deleteCard?: {
+      columnId: string;
+      cardId: string;
+      clicked: boolean;
+    };
+  }
+}
+
 interface CardProps {
   card: {
     id: string;
@@ -203,7 +214,7 @@ function Card({ card, columnId, onDeleteCard, onUpdateCard }: CardProps) {
                 e.stopPropagation();
                 console.log('削除ボタンがクリックされました', columnId, card.id);
                 
-                // windowオブジェクトの初期化
+                // window.deleteCardの初期化
                 if (!window.deleteCard) {
                   window.deleteCard = {
                     columnId: '',
@@ -212,21 +223,27 @@ function Card({ card, columnId, onDeleteCard, onUpdateCard }: CardProps) {
                   };
                 }
                 
-                // 値を設定
                 window.deleteCard.columnId = columnId;
                 window.deleteCard.cardId = card.id;
                 window.deleteCard.clicked = true;
                 
                 console.log('削除情報をwindowオブジェクトに設定しました', window.deleteCard);
               }}
-              style={{
+              style={{ 
                 border: '1px solid red',
                 background: 'white',
                 cursor: 'pointer',
                 fontSize: '12px',
-                padding: '4px 8px',
-                marginTop: '8px',
+                padding: '2px 4px',
                 borderRadius: '3px'
+              }}
+              onMouseOver={(e) => {
+                e.stopPropagation();
+                e.currentTarget.style.backgroundColor = 'rgba(9, 30, 66, 0.08)';
+              }}
+              onMouseOut={(e) => {
+                e.stopPropagation();
+                e.currentTarget.style.backgroundColor = 'transparent';
               }}
             >
               削除する
