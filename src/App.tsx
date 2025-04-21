@@ -297,63 +297,91 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-blue-600 p-4">
-      <h1 className="text-white text-2xl mb-4">Trello風タスク管理アプリ</h1>
+    <div style={{ minHeight: '100vh', backgroundColor: '#0079bf', padding: '16px' }}>
+      <h1 style={{ color: 'white', fontSize: '24px', fontWeight: 'bold', marginBottom: '20px' }}>Trello風タスク管理アプリ</h1>
       
-      {/* カラム一覧 */}
-      <div className="flex gap-4 overflow-x-auto pb-4">
+      <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '20px' }}>
         {columns.map(column => (
-          <div key={column.id} className="bg-gray-100 rounded p-4 min-w-[280px] max-w-[280px] h-fit">
-            <div className="flex justify-between items-center mb-3">
-              <h2 className="text-lg font-semibold">{column.title}</h2>
+          <div key={column.id} style={{ 
+            backgroundColor: '#ebecf0', 
+            borderRadius: '8px', 
+            padding: '12px', 
+            minWidth: '280px', 
+            maxWidth: '280px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <h2 style={{ fontSize: '16px', fontWeight: '600' }}>{column.title}</h2>
               <button
                 onClick={() => handleDeleteColumn(column.id)}
-                className="text-red-500 hover:text-red-700 font-bold text-xl"
+                style={{ 
+                  background: 'none', 
+                  border: 'none', 
+                  fontSize: '18px', 
+                  cursor: 'pointer', 
+                  color: '#6b778c'
+                }}
               >
                 ×
               </button>
             </div>
             
-            {/* カード一覧 */}
-            <div className="mb-3 max-h-[calc(100vh-250px)] overflow-y-auto">
+            <div style={{ marginBottom: '12px', maxHeight: 'calc(100vh - 240px)', overflowY: 'auto' }}>
               {column.cards.length === 0 ? (
-                <div className="text-gray-500 text-center py-2">
+                <div style={{ textAlign: 'center', color: '#6b778c', padding: '12px' }}>
                   カードがありません
                 </div>
               ) : (
                 column.cards.map(card => (
                   <div 
                     key={card.id} 
-                    className={`bg-white rounded p-3 mb-2 shadow cursor-pointer hover:shadow-md hover:translate-y-[-2px] transition-all ${getDueDateColor(card.dueDate)}`}
+                    style={{ 
+                      backgroundColor: 'white', 
+                      borderRadius: '4px', 
+                      padding: '10px', 
+                      marginBottom: '8px', 
+                      boxShadow: '0 1px 0 rgba(9,30,66,0.25)',
+                      cursor: 'pointer',
+                      borderLeft: card.dueDate ? '4px solid #61bd4f' : 'none'
+                    }}
                     onClick={() => handleEditCard(column.id, card)}
                   >
-                    <div className="flex justify-between">
-                      <div className="flex-grow">
-                        <p className="break-words">{card.content}</p>
-                        {card.dueDate && (
-                          <div className="text-xs text-gray-600 mt-1 flex items-center">
-                            <span className="mr-1">📅</span>
-                            {new Date(card.dueDate).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
-                          </div>
-                        )}
-                      </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <div>{card.content}</div>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleDeleteCard(column.id, card.id);
                         }}
-                        className="ml-2 bg-red-500 text-white rounded text-xs p-1 h-6 hover:bg-red-600"
+                        style={{ 
+                          background: 'none', 
+                          border: 'none', 
+                          cursor: 'pointer', 
+                          color: '#6b778c',
+                          marginLeft: '8px'
+                        }}
                       >
                         削除
                       </button>
                     </div>
+                    {card.dueDate && (
+                      <div style={{ 
+                        fontSize: '12px', 
+                        color: '#6b778c', 
+                        marginTop: '8px', 
+                        display: 'flex', 
+                        alignItems: 'center' 
+                      }}>
+                        <span style={{ marginRight: '4px' }}>📅</span>
+                        {new Date(card.dueDate).toLocaleDateString()}
+                      </div>
+                    )}
                   </div>
                 ))
               )}
             </div>
             
-            {/* カード追加フォーム */}
-            <div className="pt-3 border-t border-gray-300">
+            <div style={{ paddingTop: '12px', borderTop: '1px solid #ddd' }}>
               <input
                 type="text"
                 value={newCardContents[column.id] || ''}
@@ -363,12 +391,26 @@ function App() {
                     [column.id]: e.target.value
                   })
                 }
-                className="w-full p-2 border rounded mb-2"
+                style={{ 
+                  width: '95%', 
+                  padding: '8px', 
+                  border: '1px solid #ddd', 
+                  borderRadius: '4px', 
+                  marginBottom: '8px' 
+                }}
                 placeholder="新しいカードを追加"
               />
               <button
                 onClick={() => handleAddCard(column.id)}
-                className="bg-blue-500 text-white px-3 py-1 rounded w-full hover:bg-blue-600 transition-colors"
+                style={{ 
+                  backgroundColor: '#0079bf', 
+                  color: 'white', 
+                  border: 'none', 
+                  borderRadius: '4px', 
+                  padding: '8px 12px', 
+                  width: '100%', 
+                  cursor: 'pointer' 
+                }}
                 disabled={!newCardContents[column.id]?.trim()}
               >
                 追加
@@ -377,19 +419,39 @@ function App() {
           </div>
         ))}
         
-        {/* 新しいカラムを追加するフォーム */}
-        <div className="bg-gray-100 rounded p-4 min-w-[280px] max-w-[280px] h-fit">
-          <h2 className="text-lg font-semibold mb-3">新しいリストを追加</h2>
+        <div style={{ 
+          backgroundColor: '#ebecf0', 
+          borderRadius: '8px', 
+          padding: '12px', 
+          minWidth: '280px', 
+          maxWidth: '280px',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+        }}>
+          <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>新しいリストを追加</h2>
           <input
             type="text"
             value={newColumnTitle}
             onChange={(e) => setNewColumnTitle(e.target.value)}
-            className="w-full p-2 border rounded mb-2"
+            style={{ 
+              width: '95%', 
+              padding: '8px', 
+              border: '1px solid #ddd', 
+              borderRadius: '4px', 
+              marginBottom: '8px' 
+            }}
             placeholder="リスト名を入力"
           />
           <button
             onClick={handleAddColumn}
-            className="bg-green-500 text-white px-3 py-1 rounded w-full hover:bg-green-600 transition-colors"
+            style={{ 
+              backgroundColor: '#5aac44', 
+              color: 'white', 
+              border: 'none', 
+              borderRadius: '4px', 
+              padding: '8px 12px', 
+              width: '100%', 
+              cursor: 'pointer' 
+            }}
             disabled={!newColumnTitle.trim()}
           >
             追加
