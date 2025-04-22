@@ -306,8 +306,8 @@ function App() {
             backgroundColor: '#ebecf0', 
             borderRadius: '8px', 
             padding: '12px', 
-            minWidth: '280px', 
-            maxWidth: '280px',
+            minWidth: '275px', 
+            maxWidth: '275px',
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
@@ -423,8 +423,8 @@ function App() {
           backgroundColor: '#ebecf0', 
           borderRadius: '8px', 
           padding: '12px', 
-          minWidth: '280px', 
-          maxWidth: '280px',
+          minWidth: '270px', 
+          maxWidth: '270px',
           boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
         }}>
           <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>新しいリストを追加</h2>
