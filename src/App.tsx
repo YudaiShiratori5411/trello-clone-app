@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 
 // windowオブジェクトの型定義拡張（Card.tsxとの連携用）
@@ -95,7 +95,7 @@ function App() {
   } | null>(null);
   
   // windowオブジェクトから削除情報を監視する
-  useState(() => {
+  useEffect(() => {
     const checkDeleteRequest = setInterval(() => {
       if (window.deleteCard && window.deleteCard.clicked) {
         const { columnId, cardId } = window.deleteCard;
@@ -109,7 +109,31 @@ function App() {
     }, 500);
     
     return () => clearInterval(checkDeleteRequest);
-  });
+  }, [columns]);
+
+  // 期限日の色を取得する関数
+  const getDueDateColor = (dueDate: string) => {
+    const now = new Date();
+    const due = new Date(dueDate);
+    const diffTime = due.getTime() - now.getTime();
+    const diffDays = diffTime / (1000 * 3600 * 24);
+    
+    if (diffDays < 0) return '#eb5a46'; // 期限切れ：赤
+    if (diffDays < 1) return '#f2d600'; // 今日期限：黄色
+    return '#61bd4f'; // 期限あり：緑
+  };
+
+  // 期限日のボーダーを取得する関数
+  const getDueDateBorder = (dueDate: string) => {
+    const now = new Date();
+    const due = new Date(dueDate);
+    const diffTime = due.getTime() - now.getTime();
+    const diffDays = diffTime / (1000 * 3600 * 24);
+    
+    if (diffDays < 0) return '3px solid #eb5a46'; // 期限切れ：赤
+    if (diffDays < 1) return '3px solid #f2d600'; // 今日期限：黄色
+    return '3px solid #61bd4f'; // 期限あり：緑
+  };
 
   // 通知の追加
   const addNotification = (notification: Omit<Notification, 'id'>) => {
@@ -282,36 +306,33 @@ function App() {
     setEditingCard(null);
   };
 
-  // カードの期限日に基づく色を取得
-  const getDueDateColor = (dueDate: string | null) => {
-    if (!dueDate) return '';
-    
-    const now = new Date();
-    const dueDateObj = new Date(dueDate);
-    const diffTime = dueDateObj.getTime() - now.getTime();
-    const diffDays = diffTime / (1000 * 3600 * 24);
-    
-    if (diffDays < 0) return 'border-l-4 border-red-500';  // 期限切れ
-    if (diffDays < 1) return 'border-l-4 border-yellow-500';  // 24時間以内
-    return 'border-l-4 border-green-500';  // 期限あり
-  };
-
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#0079bf', padding: '16px' }}>
       <h1 style={{ color: 'white', fontSize: '24px', fontWeight: 'bold', marginBottom: '20px' }}>Trello風タスク管理アプリ</h1>
       
-      <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '20px' }}>
+      <div style={{ 
+        display: 'flex', 
+        gap: '16px', 
+        overflowX: 'auto', 
+        paddingBottom: '20px',
+        width: 'calc(100vw - 32px)', /* 画面幅からpadding分を引く */
+        boxSizing: 'border-box'      /* paddingを幅に含める */
+      }}>
         {columns.map(column => (
           <div key={column.id} style={{ 
             backgroundColor: '#ebecf0', 
             borderRadius: '8px', 
             padding: '12px', 
-            minWidth: '275px', 
-            maxWidth: '275px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            minWidth: '270px', 
+            maxWidth: '270px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            flex: '0 0 auto',  /* 幅を固定して伸縮しないように */
+            maxHeight: 'calc(100vh - 100px)',
+            display: 'flex',
+            flexDirection: 'column'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '600' }}>{column.title}</h2>
+              <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#172b4d' }}>{column.title}</h2>
               <button
                 onClick={() => handleDeleteColumn(column.id)}
                 style={{ 
@@ -319,16 +340,38 @@ function App() {
                   border: 'none', 
                   fontSize: '18px', 
                   cursor: 'pointer', 
-                  color: '#6b778c'
+                  color: '#6b778c',
+                  width: '24px',
+                  height: '24px',
+                  borderRadius: '3px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(9, 30, 66, 0.08)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = 'transparent';
                 }}
               >
                 ×
               </button>
             </div>
             
-            <div style={{ marginBottom: '12px', maxHeight: 'calc(100vh - 240px)', overflowY: 'auto' }}>
+            <div style={{ 
+              overflowY: 'auto', 
+              marginBottom: '12px',
+              flexGrow: 1,
+              paddingRight: '2px'
+            }}>
               {column.cards.length === 0 ? (
-                <div style={{ textAlign: 'center', color: '#6b778c', padding: '12px' }}>
+                <div style={{ 
+                  textAlign: 'center', 
+                  color: '#6b778c', 
+                  padding: '12px',
+                  fontSize: '13px' 
+                }}>
                   カードがありません
                 </div>
               ) : (
@@ -336,52 +379,88 @@ function App() {
                   <div 
                     key={card.id} 
                     style={{ 
-                      backgroundColor: 'white', 
-                      borderRadius: '4px', 
-                      padding: '10px', 
-                      marginBottom: '8px', 
-                      boxShadow: '0 1px 0 rgba(9,30,66,0.25)',
+                      backgroundColor: 'white',
+                      borderRadius: '3px',
+                      boxShadow: '0 1px 0 rgba(9, 30, 66, 0.25)',
+                      padding: '8px 10px',
+                      marginBottom: '8px',
                       cursor: 'pointer',
-                      borderLeft: card.dueDate ? '4px solid #61bd4f' : 'none'
+                      borderLeft: card.dueDate ? getDueDateBorder(card.dueDate) : 'none',
+                      transition: 'transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
+                      position: 'relative'
                     }}
                     onClick={() => handleEditCard(column.id, card)}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      e.currentTarget.style.boxShadow = '0 3px 5px rgba(9, 30, 66, 0.2)';
+                      const deleteButton = e.currentTarget.querySelector('.delete-button') as HTMLElement;
+                      if (deleteButton) deleteButton.style.opacity = '1';
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 1px 0 rgba(9, 30, 66, 0.25)';
+                      const deleteButton = e.currentTarget.querySelector('.delete-button') as HTMLElement;
+                      if (deleteButton) deleteButton.style.opacity = '0';
+                    }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <div>{card.content}</div>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteCard(column.id, card.id);
-                        }}
-                        style={{ 
-                          background: 'none', 
-                          border: 'none', 
-                          cursor: 'pointer', 
-                          color: '#6b778c',
-                          marginLeft: '8px'
-                        }}
-                      >
-                        削除
-                      </button>
+                    <div style={{ fontSize: '14px', marginBottom: '4px', wordBreak: 'break-word', paddingRight: '20px' }}>
+                      {card.content}
                     </div>
+                    
                     {card.dueDate && (
                       <div style={{ 
                         fontSize: '12px', 
-                        color: '#6b778c', 
-                        marginTop: '8px', 
-                        display: 'flex', 
-                        alignItems: 'center' 
+                        color: getDueDateColor(card.dueDate),
+                        display: 'flex',
+                        alignItems: 'center',
+                        marginTop: '8px'
                       }}>
                         <span style={{ marginRight: '4px' }}>📅</span>
-                        {new Date(card.dueDate).toLocaleDateString()}
+                        {new Date(card.dueDate).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
                       </div>
                     )}
+                    
+                    <button
+                      className="delete-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteCard(column.id, card.id);
+                      }}
+                      style={{ 
+                        position: 'absolute',
+                        top: '6px',
+                        right: '6px',
+                        background: 'none',
+                        border: 'none',
+                        borderRadius: '3px',
+                        width: '24px',
+                        height: '24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '14px',
+                        color: '#6b778c',
+                        opacity: '0',
+                        transition: 'opacity 0.15s ease-in-out, background-color 0.15s ease-in-out',
+                        cursor: 'pointer'
+                      }}
+                      onMouseOver={(e) => {
+                        e.stopPropagation();
+                        e.currentTarget.style.backgroundColor = 'rgba(9, 30, 66, 0.08)';
+                      }}
+                      onMouseOut={(e) => {
+                        e.stopPropagation();
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }}
+                    >
+                      ✕
+                    </button>
                   </div>
                 ))
               )}
             </div>
             
-            <div style={{ paddingTop: '12px', borderTop: '1px solid #ddd' }}>
+            <div style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid rgba(9, 30, 66, 0.13)' }}>
               <input
                 type="text"
                 value={newCardContents[column.id] || ''}
@@ -394,9 +473,10 @@ function App() {
                 style={{ 
                   width: '95%', 
                   padding: '8px', 
-                  border: '1px solid #ddd', 
-                  borderRadius: '4px', 
-                  marginBottom: '8px' 
+                  border: '1px solid #dfe1e6', 
+                  borderRadius: '3px', 
+                  marginBottom: '8px',
+                  fontSize: '14px'
                 }}
                 placeholder="新しいカードを追加"
               />
@@ -406,10 +486,19 @@ function App() {
                   backgroundColor: '#0079bf', 
                   color: 'white', 
                   border: 'none', 
-                  borderRadius: '4px', 
+                  borderRadius: '3px', 
                   padding: '8px 12px', 
                   width: '100%', 
-                  cursor: 'pointer' 
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  fontSize: '14px',
+                  transition: 'background-color 0.15s ease-in-out'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = '#026aa7';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = '#0079bf';
                 }}
                 disabled={!newCardContents[column.id]?.trim()}
               >
@@ -419,15 +508,25 @@ function App() {
           </div>
         ))}
         
+        {/* 新しいリストを追加するフォーム */}
         <div style={{ 
           backgroundColor: '#ebecf0', 
           borderRadius: '8px', 
           padding: '12px', 
           minWidth: '270px', 
           maxWidth: '270px',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          flex: '0 0 auto',
+          height: 'fit-content'
         }}>
-          <h2 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '12px' }}>新しいリストを追加</h2>
+          <h2 style={{ 
+            fontSize: '16px', 
+            fontWeight: '600', 
+            marginBottom: '12px',
+            color: '#172b4d'
+          }}>
+            新しいリストを追加
+          </h2>
           <input
             type="text"
             value={newColumnTitle}
@@ -435,9 +534,10 @@ function App() {
             style={{ 
               width: '95%', 
               padding: '8px', 
-              border: '1px solid #ddd', 
-              borderRadius: '4px', 
-              marginBottom: '8px' 
+              border: '1px solid #dfe1e6', 
+              borderRadius: '3px', 
+              marginBottom: '8px',
+              fontSize: '14px'
             }}
             placeholder="リスト名を入力"
           />
@@ -447,10 +547,19 @@ function App() {
               backgroundColor: '#5aac44', 
               color: 'white', 
               border: 'none', 
-              borderRadius: '4px', 
+              borderRadius: '3px', 
               padding: '8px 12px', 
               width: '100%', 
-              cursor: 'pointer' 
+              cursor: 'pointer',
+              fontWeight: '700',
+              fontSize: '14px',
+              transition: 'background-color 0.15s ease-in-out'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.backgroundColor = '#519839';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.backgroundColor = '#5aac44';
             }}
             disabled={!newColumnTitle.trim()}
           >
@@ -461,41 +570,110 @@ function App() {
       
       {/* 編集モーダル */}
       {editingCard && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded p-4 w-full max-w-md">
-            <h2 className="text-lg font-semibold mb-3">カードを編集</h2>
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000,
+          padding: '16px'
+        }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            padding: '16px',
+            width: '100%',
+            maxWidth: '500px',
+            boxShadow: '0 10px 20px rgba(0, 0, 0, 0.2)'
+          }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px', color: '#172b4d' }}>カードを編集</h2>
             
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '4px', color: '#172b4d' }}>
+              内容
+            </label>
             <textarea
               value={editingCard.content}
               onChange={(e) => setEditingCard({...editingCard, content: e.target.value})}
-              className="w-full p-2 border rounded mb-3"
-              rows={3}
-              placeholder="カードの内容"
+              style={{
+                width: '100%',
+                height: '100px',
+                padding: '8px',
+                border: '1px solid #dfe1e6',
+                borderRadius: '3px',
+                marginBottom: '16px',
+                fontSize: '14px',
+                resize: 'vertical'
+              }}
+              placeholder="カードの内容を入力"
             />
             
-            <div className="mb-3">
-              <label className="block text-sm text-gray-600 mb-1">期限日：</label>
-              <input
-                type="date"
-                value={editingCard.dueDate || ''}
-                onChange={(e) => setEditingCard({...editingCard, dueDate: e.target.value || null})}
-                className="w-full p-2 border rounded"
-              />
-            </div>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '600', marginBottom: '4px', color: '#172b4d' }}>
+              期限日
+            </label>
+            <input
+              type="date"
+              value={editingCard.dueDate || ''}
+              onChange={(e) => setEditingCard({...editingCard, dueDate: e.target.value || null})}
+              style={{
+                width: '100%',
+                padding: '8px',
+                border: '1px solid #dfe1e6',
+                borderRadius: '3px',
+                marginBottom: '16px',
+                fontSize: '14px'
+              }}
+            />
             
-            <div className="flex justify-end gap-2">
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
               <button
                 onClick={handleCancelEdit}
-                className="bg-gray-300 text-gray-800 px-3 py-1 rounded hover:bg-gray-400 transition-colors"
+                style={{
+                  backgroundColor: '#ebecf0',
+                  color: '#172b4d',
+                  border: 'none',
+                  borderRadius: '3px',
+                  padding: '8px 16px',
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  fontSize: '14px',
+                  transition: 'background-color 0.15s ease-in-out'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = '#dfe1e6';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = '#ebecf0';
+                }}
               >
                 キャンセル
               </button>
               <button
                 onClick={handleUpdateCard}
-                className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors"
+                style={{
+                  backgroundColor: '#0079bf',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '3px',
+                  padding: '8px 16px',
+                  cursor: 'pointer',
+                  fontWeight: '700',
+                  fontSize: '14px',
+                  transition: 'background-color 0.15s ease-in-out'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = '#026aa7';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = '#0079bf';
+                }}
                 disabled={!editingCard.content.trim()}
               >
-                更新
+                保存
               </button>
             </div>
           </div>
@@ -503,12 +681,29 @@ function App() {
       )}
       
       {/* 通知システム */}
-      <div className="fixed bottom-4 right-4 space-y-2 z-40">
+      <div style={{
+        position: 'fixed',
+        bottom: '20px',
+        right: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        zIndex: 1000
+      }}>
         {notifications.map(notification => (
           <div 
             key={notification.id}
-            className={`p-3 rounded shadow-lg max-w-xs transition-all duration-500 
-              ${notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}
+            style={{
+              backgroundColor: notification.type === 'success' ? '#5aac44' : '#eb5a46',
+              color: 'white',
+              padding: '10px 16px',
+              borderRadius: '4px',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)',
+              maxWidth: '300px',
+              animation: 'fadeIn 0.3s ease-in-out',
+              fontSize: '14px',
+              fontWeight: '600'
+            }}
           >
             {notification.message}
           </div>
