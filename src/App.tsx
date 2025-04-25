@@ -319,18 +319,30 @@ function App() {
         boxSizing: 'border-box'      /* paddingを幅に含める */
       }}>
         {columns.map(column => (
-          <div key={column.id} style={{ 
-            backgroundColor: '#ebecf0', 
-            borderRadius: '8px', 
-            padding: '12px', 
-            minWidth: '270px', 
-            maxWidth: '270px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-            flex: '0 0 auto',  /* 幅を固定して伸縮しないように */
-            maxHeight: 'calc(100vh - 100px)',
-            display: 'flex',
-            flexDirection: 'column'
-          }}>
+          <div 
+            key={column.id} 
+            style={{ 
+              backgroundColor: '#ebecf0', 
+              borderRadius: '8px', 
+              padding: '12px', 
+              minWidth: '270px', 
+              maxWidth: '270px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+              flex: '0 0 auto',  /* 幅を固定して伸縮しないように */
+              maxHeight: 'calc(100vh - 100px)',
+              display: 'flex',
+              flexDirection: 'column',
+              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.transform = 'translateY(-5px)';
+              e.currentTarget.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.15)';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+            }}
+          >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#172b4d' }}>{column.title}</h2>
               <button
@@ -509,16 +521,27 @@ function App() {
         ))}
         
         {/* 新しいリストを追加するフォーム */}
-        <div style={{ 
-          backgroundColor: '#ebecf0', 
-          borderRadius: '8px', 
-          padding: '12px', 
-          minWidth: '270px', 
-          maxWidth: '270px',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-          flex: '0 0 auto',
-          height: 'fit-content'
-        }}>
+        <div 
+          style={{ 
+            backgroundColor: '#ebecf0', 
+            borderRadius: '8px', 
+            padding: '12px', 
+            minWidth: '270px', 
+            maxWidth: '270px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+            flex: '0 0 auto',
+            height: 'fit-content',
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.transform = 'translateY(-5px)';
+            e.currentTarget.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.15)';
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+          }}
+        >
           <h2 style={{ 
             fontSize: '16px', 
             fontWeight: '600', 
