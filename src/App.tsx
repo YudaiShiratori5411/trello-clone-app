@@ -32,6 +32,34 @@ type Notification = {
   message: string;
 };
 
+// カラムの色定義
+const getColumnColor = (title: string) => {
+  const colors = {
+    'To Do': {
+      bg: '#e3f2fd',
+      header: '#2196f3',
+      text: '#0d47a1'
+    },
+    '進行中': {
+      bg: '#fff8e1',
+      header: '#ffc107',
+      text: '#ff6f00'
+    },
+    '完了': {
+      bg: '#e8f5e9',
+      header: '#4caf50',
+      text: '#1b5e20'
+    },
+    'default': {
+      bg: '#ebecf0',
+      header: '#5e6c84',
+      text: '#172b4d'
+    }
+  };
+  
+  return colors[title as keyof typeof colors] || colors.default;
+};
+
 function App() {
   const [columns, setColumns] = useState<Column[]>([
     {
@@ -318,220 +346,244 @@ function App() {
         width: 'calc(100vw - 32px)', /* 画面幅からpadding分を引く */
         boxSizing: 'border-box'      /* paddingを幅に含める */
       }}>
-        {columns.map(column => (
-          <div 
-            key={column.id} 
-            style={{ 
-              backgroundColor: '#ebecf0', 
-              borderRadius: '8px', 
-              padding: '12px', 
-              minWidth: '270px', 
-              maxWidth: '270px',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-              flex: '0 0 auto',  /* 幅を固定して伸縮しないように */
-              maxHeight: 'calc(100vh - 100px)',
-              display: 'flex',
-              flexDirection: 'column',
-              transition: 'transform 0.2s ease, box-shadow 0.2s ease'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.transform = 'translateY(-5px)';
-              e.currentTarget.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.15)';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.transform = 'translateY(0)';
-              e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-              <h2 style={{ fontSize: '16px', fontWeight: '600', color: '#172b4d' }}>{column.title}</h2>
-              <button
-                onClick={() => handleDeleteColumn(column.id)}
-                style={{ 
-                  background: 'none', 
-                  border: 'none', 
-                  fontSize: '18px', 
-                  cursor: 'pointer', 
-                  color: '#6b778c',
-                  width: '24px',
-                  height: '24px',
-                  borderRadius: '3px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(9, 30, 66, 0.08)';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = 'transparent';
-                }}
-              >
-                ×
-              </button>
-            </div>
-            
-            <div style={{ 
-              overflowY: 'auto', 
-              marginBottom: '12px',
-              flexGrow: 1,
-              paddingRight: '2px'
-            }}>
-              {column.cards.length === 0 ? (
-                <div style={{ 
-                  textAlign: 'center', 
-                  color: '#6b778c', 
-                  padding: '12px',
-                  fontSize: '13px' 
-                }}>
-                  カードがありません
-                </div>
-              ) : (
-                column.cards.map(card => (
-                  <div 
-                    key={card.id} 
+        {columns.map(column => {
+          const columnColor = getColumnColor(column.title);
+          
+          return (
+            <div 
+              key={column.id} 
+              style={{ 
+                backgroundColor: columnColor.bg, 
+                borderRadius: '8px', 
+                padding: '0',  /* パディングを0にして上部バーのために余白を空ける */
+                minWidth: '270px', 
+                maxWidth: '270px',
+                boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                flex: '0 0 auto',  /* 幅を固定して伸縮しないように */
+                maxHeight: 'calc(100vh - 100px)',
+                display: 'flex',
+                flexDirection: 'column',
+                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                overflow: 'hidden'  /* 角丸を保つため */
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.transform = 'translateY(-5px)';
+                e.currentTarget.style.boxShadow = '0 8px 16px rgba(0, 0, 0, 0.15)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+              }}
+            >
+              {/* カラムのヘッダー部分に色付きバーを追加 */}
+              <div style={{ 
+                backgroundColor: columnColor.header, 
+                height: '6px', 
+                width: '100%' 
+              }}></div>
+              
+              <div style={{ padding: '12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                  <h2 style={{ 
+                    fontSize: '16px', 
+                    fontWeight: '600', 
+                    color: columnColor.text 
+                  }}>
+                    {column.title}
+                  </h2>
+                  <button
+                    onClick={() => handleDeleteColumn(column.id)}
                     style={{ 
-                      backgroundColor: 'white',
+                      background: 'none', 
+                      border: 'none', 
+                      fontSize: '18px', 
+                      cursor: 'pointer', 
+                      color: '#6b778c',
+                      width: '24px',
+                      height: '24px',
                       borderRadius: '3px',
-                      boxShadow: '0 1px 0 rgba(9, 30, 66, 0.25)',
-                      padding: '8px 10px',
-                      marginBottom: '8px',
-                      cursor: 'pointer',
-                      borderLeft: card.dueDate ? getDueDateBorder(card.dueDate) : 'none',
-                      transition: 'transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
-                      position: 'relative'
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
                     }}
-                    onClick={() => handleEditCard(column.id, card)}
                     onMouseOver={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-2px)';
-                      e.currentTarget.style.boxShadow = '0 3px 5px rgba(9, 30, 66, 0.2)';
-                      const deleteButton = e.currentTarget.querySelector('.delete-button') as HTMLElement;
-                      if (deleteButton) deleteButton.style.opacity = '1';
+                      e.currentTarget.style.backgroundColor = 'rgba(9, 30, 66, 0.08)';
                     }}
                     onMouseOut={(e) => {
-                      e.currentTarget.style.transform = 'translateY(0)';
-                      e.currentTarget.style.boxShadow = '0 1px 0 rgba(9, 30, 66, 0.25)';
-                      const deleteButton = e.currentTarget.querySelector('.delete-button') as HTMLElement;
-                      if (deleteButton) deleteButton.style.opacity = '0';
+                      e.currentTarget.style.backgroundColor = 'transparent';
                     }}
                   >
-                    <div style={{ fontSize: '14px', marginBottom: '4px', wordBreak: 'break-word', paddingRight: '20px' }}>
-                      {card.content}
+                    ×
+                  </button>
+                </div>
+                
+                <div style={{ 
+                  overflowY: 'auto', 
+                  marginBottom: '12px',
+                  flexGrow: 1,
+                  paddingRight: '2px',
+                  maxHeight: 'calc(100vh - 220px)'
+                }}>
+                  {column.cards.length === 0 ? (
+                    <div style={{ 
+                      textAlign: 'center', 
+                      color: '#6b778c', 
+                      padding: '12px',
+                      fontSize: '13px' 
+                    }}>
+                      カードがありません
                     </div>
-                    
-                    {card.dueDate && (
-                      <div style={{ 
-                        fontSize: '12px', 
-                        color: getDueDateColor(card.dueDate),
-                        display: 'flex',
-                        alignItems: 'center',
-                        marginTop: '8px'
-                      }}>
-                        <span style={{ marginRight: '4px' }}>📅</span>
-                        {new Date(card.dueDate).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
+                  ) : (
+                    column.cards.map(card => (
+                      <div 
+                        key={card.id} 
+                        style={{ 
+                          backgroundColor: 'white',
+                          borderRadius: '3px',
+                          boxShadow: '0 1px 0 rgba(9, 30, 66, 0.25)',
+                          padding: '8px 10px',
+                          marginBottom: '8px',
+                          cursor: 'pointer',
+                          borderLeft: card.dueDate ? getDueDateBorder(card.dueDate) : `3px solid ${columnColor.header}`, // カラムの色を使用
+                          transition: 'transform 0.15s ease-in-out, box-shadow 0.15s ease-in-out',
+                          position: 'relative'
+                        }}
+                        onClick={() => handleEditCard(column.id, card)}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = '0 3px 5px rgba(9, 30, 66, 0.2)';
+                          const deleteButton = e.currentTarget.querySelector('.delete-button') as HTMLElement;
+                          if (deleteButton) deleteButton.style.opacity = '1';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = '0 1px 0 rgba(9, 30, 66, 0.25)';
+                          const deleteButton = e.currentTarget.querySelector('.delete-button') as HTMLElement;
+                          if (deleteButton) deleteButton.style.opacity = '0';
+                        }}
+                      >
+                        <div style={{ fontSize: '14px', marginBottom: '4px', wordBreak: 'break-word', paddingRight: '20px' }}>
+                          {card.content}
+                        </div>
+                        
+                        {card.dueDate && (
+                          <div style={{ 
+                            fontSize: '12px', 
+                            color: getDueDateColor(card.dueDate),
+                            display: 'flex',
+                            alignItems: 'center',
+                            marginTop: '8px'
+                          }}>
+                            <span style={{ marginRight: '4px' }}>📅</span>
+                            {new Date(card.dueDate).toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' })}
+                          </div>
+                        )}
+                        
+                        <button
+                          className="delete-button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteCard(column.id, card.id);
+                          }}
+                          style={{ 
+                            position: 'absolute',
+                            top: '6px',
+                            right: '6px',
+                            background: 'none',
+                            border: 'none',
+                            borderRadius: '3px',
+                            width: '24px',
+                            height: '24px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '14px',
+                            color: '#6b778c',
+                            opacity: '0',
+                            transition: 'opacity 0.15s ease-in-out, background-color 0.15s ease-in-out',
+                            cursor: 'pointer'
+                          }}
+                          onMouseOver={(e) => {
+                            e.stopPropagation();
+                            e.currentTarget.style.backgroundColor = 'rgba(9, 30, 66, 0.08)';
+                          }}
+                          onMouseOut={(e) => {
+                            e.stopPropagation();
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          }}
+                        >
+                          ✕
+                        </button>
                       </div>
-                    )}
-                    
-                    <button
-                      className="delete-button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteCard(column.id, card.id);
-                      }}
-                      style={{ 
-                        position: 'absolute',
-                        top: '6px',
-                        right: '6px',
-                        background: 'none',
-                        border: 'none',
-                        borderRadius: '3px',
-                        width: '24px',
-                        height: '24px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '14px',
-                        color: '#6b778c',
-                        opacity: '0',
-                        transition: 'opacity 0.15s ease-in-out, background-color 0.15s ease-in-out',
-                        cursor: 'pointer'
-                      }}
-                      onMouseOver={(e) => {
-                        e.stopPropagation();
-                        e.currentTarget.style.backgroundColor = 'rgba(9, 30, 66, 0.08)';
-                      }}
-                      onMouseOut={(e) => {
-                        e.stopPropagation();
-                        e.currentTarget.style.backgroundColor = 'transparent';
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))
-              )}
+                    ))
+                  )}
+                </div>
+                
+                <div style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid rgba(9, 30, 66, 0.13)' }}>
+                  <input
+                    type="text"
+                    value={newCardContents[column.id] || ''}
+                    onChange={(e) => 
+                      setNewCardContents({
+                        ...newCardContents,
+                        [column.id]: e.target.value
+                      })
+                    }
+                    style={{ 
+                      width: '95%', 
+                      padding: '8px', 
+                      border: '1px solid #dfe1e6', 
+                      borderRadius: '3px', 
+                      marginBottom: '8px',
+                      fontSize: '14px'
+                    }}
+                    placeholder="新しいカードを追加"
+                  />
+                  <button
+                    onClick={() => handleAddCard(column.id)}
+                    style={{ 
+                      backgroundColor: columnColor.header, // カラムの色を使用 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '3px', 
+                      padding: '8px 12px', 
+                      width: '100%', 
+                      cursor: 'pointer',
+                      fontWeight: '700',
+                      fontSize: '14px',
+                      transition: 'background-color 0.15s ease-in-out'
+                    }}
+                    onMouseOver={(e) => {
+                      // ホバー時に少し暗くする
+                      e.currentTarget.style.filter = 'brightness(0.9)';
+                    }}
+                    onMouseOut={(e) => {
+                      // ホバー解除時に元に戻す
+                      e.currentTarget.style.filter = 'brightness(1)';
+                    }}
+                    disabled={!newCardContents[column.id]?.trim()}
+                  >
+                    追加
+                  </button>
+                </div>
+              </div>
             </div>
-            
-            <div style={{ marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid rgba(9, 30, 66, 0.13)' }}>
-              <input
-                type="text"
-                value={newCardContents[column.id] || ''}
-                onChange={(e) => 
-                  setNewCardContents({
-                    ...newCardContents,
-                    [column.id]: e.target.value
-                  })
-                }
-                style={{ 
-                  width: '95%', 
-                  padding: '8px', 
-                  border: '1px solid #dfe1e6', 
-                  borderRadius: '3px', 
-                  marginBottom: '8px',
-                  fontSize: '14px'
-                }}
-                placeholder="新しいカードを追加"
-              />
-              <button
-                onClick={() => handleAddCard(column.id)}
-                style={{ 
-                  backgroundColor: '#0079bf', 
-                  color: 'white', 
-                  border: 'none', 
-                  borderRadius: '3px', 
-                  padding: '8px 12px', 
-                  width: '100%', 
-                  cursor: 'pointer',
-                  fontWeight: '700',
-                  fontSize: '14px',
-                  transition: 'background-color 0.15s ease-in-out'
-                }}
-                onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = '#026aa7';
-                }}
-                onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = '#0079bf';
-                }}
-                disabled={!newCardContents[column.id]?.trim()}
-              >
-                追加
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
         
         {/* 新しいリストを追加するフォーム */}
         <div 
           style={{ 
             backgroundColor: '#ebecf0', 
             borderRadius: '8px', 
-            padding: '12px', 
+            padding: '0', 
             minWidth: '270px', 
             maxWidth: '270px',
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
             flex: '0 0 auto',
             height: 'fit-content',
-            transition: 'transform 0.2s ease, box-shadow 0.2s ease'
+            transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+            overflow: 'hidden'
           }}
           onMouseOver={(e) => {
             e.currentTarget.style.transform = 'translateY(-5px)';
@@ -542,52 +594,61 @@ function App() {
             e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
           }}
         >
-          <h2 style={{ 
-            fontSize: '16px', 
-            fontWeight: '600', 
-            marginBottom: '12px',
-            color: '#172b4d'
-          }}>
-            新しいリストを追加
-          </h2>
-          <input
-            type="text"
-            value={newColumnTitle}
-            onChange={(e) => setNewColumnTitle(e.target.value)}
-            style={{ 
-              width: '95%', 
-              padding: '8px', 
-              border: '1px solid #dfe1e6', 
-              borderRadius: '3px', 
-              marginBottom: '8px',
-              fontSize: '14px'
-            }}
-            placeholder="リスト名を入力"
-          />
-          <button
-            onClick={handleAddColumn}
-            style={{ 
-              backgroundColor: '#5aac44', 
-              color: 'white', 
-              border: 'none', 
-              borderRadius: '3px', 
-              padding: '8px 12px', 
-              width: '100%', 
-              cursor: 'pointer',
-              fontWeight: '700',
-              fontSize: '14px',
-              transition: 'background-color 0.15s ease-in-out'
-            }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = '#519839';
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = '#5aac44';
-            }}
-            disabled={!newColumnTitle.trim()}
-          >
-            追加
-          </button>
+          {/* 新規リスト追加のヘッダーバー */}
+          <div style={{ 
+            backgroundColor: '#5e6c84', 
+            height: '6px', 
+            width: '100%' 
+          }}></div>
+          
+          <div style={{ padding: '12px' }}>
+            <h2 style={{ 
+              fontSize: '16px', 
+              fontWeight: '600', 
+              marginBottom: '12px',
+              color: '#172b4d'
+            }}>
+              新しいリストを追加
+            </h2>
+            <input
+              type="text"
+              value={newColumnTitle}
+              onChange={(e) => setNewColumnTitle(e.target.value)}
+              style={{ 
+                width: '95%', 
+                padding: '8px', 
+                border: '1px solid #dfe1e6', 
+                borderRadius: '3px', 
+                marginBottom: '8px',
+                fontSize: '14px'
+              }}
+              placeholder="リスト名を入力"
+            />
+            <button
+              onClick={handleAddColumn}
+              style={{ 
+                backgroundColor: '#5aac44', 
+                color: 'white', 
+                border: 'none', 
+                borderRadius: '3px', 
+                padding: '8px 12px', 
+                width: '100%', 
+                cursor: 'pointer',
+                fontWeight: '700',
+                fontSize: '14px',
+                transition: 'background-color 0.15s ease-in-out'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = '#519839';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = '#5aac44';
+              }}
+              disabled={!newColumnTitle.trim()}
+            >
+              追加
+            </button>
+          </div>
         </div>
       </div>
       
