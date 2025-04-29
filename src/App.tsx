@@ -86,9 +86,9 @@ function App() {
             display: 'flex',
             alignItems: 'center'
           }}
-          onClick={() => setShowNewListForm(true)}
+          onClick={() => setShowNewListForm(!showNewListForm)}
         >
-          + リストを追加
+          {showNewListForm ? '- リストを追加' : '+ リストを追加'}
         </button>
       </div>
 
